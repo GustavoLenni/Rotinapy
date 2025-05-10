@@ -1,0 +1,699 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotina.py</title>
+    <link
+      rel="icon"
+      href="{% static 'images/rotina.png' %}"
+      type="image/x-icon"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
+      crossorigin="anonymous"
+    />
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <style>
+    :root {
+        --primary: #1da1f2;
+        --primary-dark: #0d8bd4;
+        --primary-light: rgba(29, 161, 242, 0.1);
+        --dark: #19191d;
+        --darker: #0f0f11;
+        --light-text: #ffffff;
+        --medium-gray: #a0a0a0;
+        --dark-gray: #2e2e31;
+        --accent-purple: #6b46c1;
+        --accent-red: #e53e3e;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    body {
+        background-color: var(--darker);
+        color: var(--light-text);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Navbar moderna e clean */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: rgba(12, 12, 14, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 0.8rem 5%;
+        height: 80px;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .navbar.scrolled {
+        height: 70px;
+        background-color: rgba(10, 10, 12, 0.98);
+    }
+    
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+    
+    .logo img {
+        width: 40px;
+        height: auto;
+        object-fit: contain;
+        margin-right: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .logo-text {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.5rem;
+        color: var(--light-text);
+        letter-spacing: -0.5px;
+    }
+
+    .logo-text span {
+        color: var(--primary);
+    }
+
+    .logo:hover img {
+        transform: rotate(5deg) scale(1.05);
+    }
+    
+    .nav-links {
+        list-style: none;
+        display: flex;
+        gap: 2rem;
+        margin: 0;
+        padding: 0;
+        align-items: center;
+    }
+    
+    .nav-links a {
+        text-decoration: none;
+        color: var(--medium-gray);
+        font-weight: 500;
+        font-size: 0.95rem;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+        padding: 0.5rem 0.8rem;
+        border-radius: 6px;
+        position: relative;
+    }
+
+    .nav-links a:hover {
+        color: var(--light-text);
+    }
+
+    .nav-links a.active {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .nav-links a.active::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        width: 20px;
+        height: 3px;
+        background-color: var(--primary);
+        transform: translateX(-50%);
+        border-radius: 2px;
+    }
+
+    .nav-links a i {
+        margin-right: 6px;
+        font-size: 0.9rem;
+    }
+
+    .cta-button {
+        background-color: var(--primary);
+        color: var(--light-text) !important;
+        padding: 0.6rem 1.2rem !important;
+        border-radius: 8px;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(29, 161, 242, 0.3);
+        transition: all 0.3s ease !important;
+    }
+
+    .cta-button:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(29, 161, 242, 0.4);
+    }
+
+    .hamburger {
+        display: none;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: var(--light-text);
+        font-size: 1.5rem;
+    }
+    
+    /* Mobile menu */
+    @media (max-width: 768px) {
+        .navbar {
+            padding: 0 1rem;
+            height: 70px;
+        }
+        
+        .nav-links {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            background-color: rgba(12, 12, 14, 0.98);
+            backdrop-filter: blur(10px);
+            flex-direction: column;
+            gap: 0;
+            height: 0;
+            overflow: hidden;
+            transition: height 0.3s ease;
+            width: 100%;
+        }
+        
+        .nav-links.active {
+            height: auto;
+            padding: 1rem 0;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-links a {
+            width: 100%;
+            padding: 1rem 2rem;
+            text-align: left;
+            border-radius: 0;
+        }
+        
+        .hamburger {
+            display: block;
+        }
+
+        .cta-button {
+            margin: 1rem 2rem;
+            text-align: center;
+            display: block;
+            width: calc(100% - 4rem);
+        }
+    }
+
+    /* Main Content */
+    .main-container {
+        padding-top: 120px;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        min-height: 100vh;
+        padding-bottom: 3rem;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding: 0 1rem;
+    }
+    
+    .page-header h1 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 2.2rem;
+        color: var(--light-text);
+        margin-bottom: 1rem;
+    }
+    
+    .page-header h1 span {
+        color: var(--primary);
+    }
+
+    .welcome-text {
+        color: var(--medium-gray);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    /* Form Styles */
+    .form-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 2.5rem;
+        background-color: rgba(20, 20, 24, 0.5);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem 1.2rem;
+        background-color: var(--dark-gray);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: var(--light-text);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    .form-control::placeholder{
+      color: var(--medium-gray);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.25);
+    }
+
+    textarea.form-control {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+        margin-right: 10px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary);
+    }
+
+    .checkbox-label {
+        color: var(--light-text);
+        font-size: 1rem;
+    }
+
+    /* Estilos melhorados para dias da semana */
+    .dias-semana-container {
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
+        padding: 1.5rem;
+        background-color: rgba(25, 25, 30, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .dias-semana-titulo {
+        display: flex;
+        align-items: center;
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+        font-size: 1rem;
+    }
+    
+    .dias-semana-titulo i {
+        margin-right: 8px;
+        font-size: 1.1rem;
+    }
+
+    .dias-semana-grupo {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    /* Estilo moderno para os botões de dia da semana */
+    .dia-semana-item {
+        position: relative;
+        width: calc(25% - 12px);
+        min-width: 100px;
+    }
+
+    .dia-semana-item input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .dia-semana-item label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 80px;
+        color: var(--medium-gray);
+        font-size: 0.95rem;
+        background-color: var(--dark-gray);
+        border-radius: 10px;
+        padding: 0.8rem 0.5rem;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .dia-semana-item label::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-color: var(--primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .dia-semana-item label .dia-nome {
+        font-weight: 600;
+        margin-top: 5px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .dia-semana-item label .dia-simbolo {
+        color: var(--primary);
+        font-size: 1.4rem;
+        margin-bottom: 3px;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+    }
+
+    .dia-semana-item input[type="checkbox"]:checked + label {
+        background-color: var(--primary-light);
+        color: var(--light-text);
+        box-shadow: 0 5px 15px rgba(29, 161, 242, 0.15);
+        transform: translateY(-2px);
+        border-color: rgba(29, 161, 242, 0.2);
+    }
+
+    .dia-semana-item input[type="checkbox"]:checked + label::before {
+        transform: scaleX(1);
+    }
+
+    .dia-semana-item input[type="checkbox"]:checked + label .dia-nome {
+        color: var(--primary);
+    }
+
+    .dia-semana-item input[type="checkbox"]:checked + label .dia-simbolo {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    .dia-semana-item label:hover {
+        background-color: rgba(46, 46, 49, 0.8);
+        transform: translateY(-1px);
+    }
+
+    .dia-semana-item input[type="checkbox"]:focus + label {
+        box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.25);
+    }
+
+    .submit-btn {
+        background-color: var(--primary);
+        color: var(--light-text);
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(29, 161, 242, 0.25);
+        border: none;
+    }
+
+    .submit-btn:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(29, 161, 242, 0.4);
+    }
+
+    /* Ambient effect */
+    .ambient-light {
+        position: absolute;
+        z-index: -1;
+        opacity: 0.4;
+        pointer-events: none;
+    }
+    
+    .top-light {
+        width: 100%;
+        height: 50vh;
+        background: radial-gradient(ellipse at top right, rgba(29, 161, 242, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+        top: 0;
+        right: 0;
+    }
+    
+    .bottom-light {
+        width: 100%;
+        height: 50vh;
+        background: radial-gradient(ellipse at bottom left, rgba(29, 161, 242, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+        bottom: 0;
+        left: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .main-container {
+            padding-top: 100px;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .form-container {
+            padding: 1.5rem;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .dia-semana-item {
+            width: calc(33.33% - 12px);
+            min-width: 85px;
+        }
+        
+        .dia-semana-item label {
+            min-height: 70px;
+            padding: 0.6rem 0.4rem;
+        }
+        
+        .dia-semana-item label .dia-simbolo {
+            font-size: 1.2rem;
+        }
+        
+        .dia-semana-item label .dia-nome {
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .dia-semana-item {
+            width: calc(50% - 12px);
+        }
+    }
+  </style>
+  <body>
+    <!-- Elementos de efeito visual -->
+    <div class="ambient-light top-light"></div>
+    <div class="ambient-light bottom-light"></div>
+
+    <!-- Navbar moderna e clean -->
+    <nav class="navbar">
+      <a href="{% url 'projeto' %}" class="logo">
+        <img src="{% static 'images/rotina.png' %}" alt="Rotina Logo" />
+        <div class="logo-text">Rotina.<span>py</span></div>
+      </a>
+      
+      <ul class="nav-links">
+        <li><a href="{% url 'projeto' %}"><i class="fas fa-home"></i>Início</a></li>
+        <li><a href="{% url 'rotina:home' %}"><i class="fas fa-tasks"></i>Minhas Tarefas</a></li>
+        <li><a href="{% url 'rotina:adicionar' %}" class="active cta-button"><i class="fas fa-plus"></i>Nova Tarefa</a></li>
+      </ul>
+      
+      <button class="hamburger">
+        <i class="fas fa-bars"></i>
+      </button>
+    </nav>
+
+    <!-- Título e formulário -->
+    <main class="main-container">
+        <div class="page-header">
+            <h1>Edite Suas <span>Tarefas</span> Aqui!</h1>
+            <p class="welcome-text">Preencha os campos abaixo para criar uma nova tarefa e organizar melhor seu dia a dia.</p>
+        </div>
+
+        <div class="form-container">
+            <form action="" method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_nome">Nome da Tarefa</label>
+                    {{ form.nome }}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_descricao">Descrição</label>
+                    {{ form.descricao }}
+                </div>
+                
+                <div class="checkbox-container">
+                    {{ form.completo }}
+                    <label class="checkbox-label" for="id_completo">Marcar como completa</label>
+                </div>
+                
+                <div class="dias-semana-container">
+                    <label class="dias-semana-titulo">
+                        <i class="far fa-calendar-alt"></i>
+                        Em quais dias esta tarefa ocorre?
+                    </label>
+                    <div class="dias-semana-grupo">
+                        {% for dia in form.dias_semana %}
+                            <div class="dia-semana-item">
+                                {{ dia.tag }}
+                                <label for="{{ dia.id_for_label }}">
+                                    <span class="dia-simbolo">
+                                        {% if 'Segunda' in dia.choice_label %}
+                                            <i class="fas fa-calendar-day"></i>
+                                        {% elif 'Terça' in dia.choice_label %}
+                                            <i class="fas fa-calendar-day"></i>
+                                        {% elif 'Quarta' in dia.choice_label %}
+                                            <i class="fas fa-calendar-day"></i>
+                                        {% elif 'Quinta' in dia.choice_label %}
+                                            <i class="fas fa-calendar-day"></i>
+                                        {% elif 'Sexta' in dia.choice_label %}
+                                            <i class="fas fa-calendar-day"></i>
+                                        {% elif 'Sábado' in dia.choice_label %}
+                                            <i class="fas fa-calendar-alt"></i>
+                                        {% elif 'Domingo' in dia.choice_label %}
+                                            <i class="fas fa-calendar-alt"></i>
+                                        {% endif %}
+                                    </span>
+                                    <span class="dia-nome">{{ dia.choice_label }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-check-circle"></i>
+                    Adicionar Tarefa
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+      crossorigin="anonymous"
+    ></script>
+    
+    <script>
+        // JavaScript para controle do menu mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            
+            hamburger.addEventListener('click', function() {
+                navLinks.classList.toggle('active');
+                hamburger.innerHTML = navLinks.classList.contains('active') 
+                    ? '<i class="fas fa-times"></i>' 
+                    : '<i class="fas fa-bars"></i>';
+            });
+            
+            // Navbar scroll effect
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+
+            // Adicionar classes e atributos para melhorar a usabilidade do formulário
+            const nomeInput = document.getElementById('id_nome');
+            const descricaoTextarea = document.getElementById('id_descricao');
+            
+            if (nomeInput) {
+                nomeInput.classList.add('form-control');
+                nomeInput.setAttribute('placeholder', 'Digite o nome da tarefa...');
+            }
+            
+            if (descricaoTextarea) {
+                descricaoTextarea.classList.add('form-control');
+                descricaoTextarea.setAttribute('placeholder', 'Descreva os detalhes da sua tarefa...');
+            }
+            
+            // Para acessibilidade e experiência do usuário nas seleções de dias
+            const diasSemanaItems = document.querySelectorAll('.dia-semana-item');
+            
+            diasSemanaItems.forEach(item => {
+                const input = item.querySelector('input[type="checkbox"]');
+                const label = item.querySelector('label');
+                
+                if (input && label) {
+                    // Adicionar indicações visuais para acessibilidade
+                    input.setAttribute('autocomplete', 'off');
+                    
+                    // Para dispositivos touch, melhorar a experiência
+                    label.addEventListener('touchstart', function() {
+                        this.classList.add('touch-active');
+                    });
+                    
+                    label.addEventListener('touchend', function() {
+                        this.classList.remove('touch-active');
+                    });
+                }
+            });
+        });
+    </script>
+  </body>
+</html>
