@@ -28,7 +28,11 @@ class ConclusoesModel(models.Model):
     tarefa = models.ForeignKey(TarefaModel,on_delete=models.CASCADE, related_name='conclusoes')
     dia = models.CharField(max_length=10,choices=TarefaModel.DIAS_SEMANA)
     concluido = models.BooleanField(default=False)
+    concluida_em = models.DateTimeField(null=True, blank=True) 
 
     def __str__(self):
         return f'{self.tarefa.nome} - {self.dia} - {"Concluido" if self.concluido else "Pendente"}'
     
+
+class ResetSemana(models.Model):
+    data_reset = models.DateField()

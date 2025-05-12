@@ -1,25 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import TarefaForm
-from .models import TarefaModel, ConclusoesModel
+from .models import TarefaModel, ConclusoesModel, ResetSemana
 from django.http import HttpRequest
-from django.utils.timezone import now
+from django.utils.timezone import localtime, localdate
+from datetime import timedelta
 from django.template.defaulttags import register
+from django.utils import timezone
+from django.db.models import Q
+from django.utils.timezone import make_aware, datetime
 
-# Custom template filter para acessar itens em um dicionário por chave
-# get_item serve para Acessar a itens em um dicionário
-@register.filter
-def get_item(dictionary, key):
-    return dictionary.get(key, 0)
-
-# Custom template filter para split
-# split dividir uma string e tranforma-la em lista para conseguir iterar 
-@register.filter
-def split(value, arg):
-    return value.split(arg)
 
 def rotina_home(request):
+    # ------Dia da semana------
     # Obter o dia da semana atual em inglês
-    dia_semana_ingles = now().strftime("%A").lower()
+    dia_semana_ingles = localtime().strftime("%A").lower()
 
     # Tradução dos dias da semana
     dias_traduzidos = {
@@ -46,33 +40,108 @@ def rotina_home(request):
         dia_atual = dias_traduzidos.get(dia_semana_ingles, "segunda")
     
     # Dia de hoje para destacar no seletor
-    hoje = dias_traduzidos.get(dia_semana_ingles, "segunda")
+    dia_hoje = dias_traduzidos.get(dia_semana_ingles, "segunda")
     
+
+    # ----Status de Conclusão e de contagem de tarefas-----
     # Contagem de tarefas por dia da semana
     contagem_tarefas = {}
     for dia in todos_dias:
-        # Aqui assumimos que dias_semana é um campo de texto que contém o dia
-        # Se for uma lista ou outro formato, precisará adaptar esta condição
         contagem_tarefas[dia] = TarefaModel.objects.filter(dias_semana__contains=dia).count()
     
     # Filtrar tarefas do dia específico
     tarefas_do_dia = TarefaModel.objects.filter(dias_semana__contains=dia_atual)
 
-    # Mapeia conclusões existentes
+    # Mapeia conclusões existentes para o dia atual
     conclusoes = ConclusoesModel.objects.filter(dia=dia_atual)
-    status_conclusao = { conclusao.tarefa_id: conclusao.concluido for conclusao in conclusoes }
+    status_conclusao = {conclusao.tarefa_id: conclusao.concluido for conclusao in conclusoes}
+    print(f"Status de conclusão para o dia {dia_atual}: {status_conclusao}")
+    
+    # Preparar a lista de dias para o template
+    dias_semana_lista = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"]
+
+    # -----Reset------
+    data_atual = localdate()
+    dia_semana = data_atual.strftime("%A").lower()
+
+    # Se for segunda-feira, reseta todas as confirmações 
+    if dia_semana == 'monday':
+        reset_realizado = ResetSemana.objects.filter(data_reset=data_atual).exists()
+        if not reset_realizado:
+            ConclusoesModel.objects.all().update(concluido=False)
+            ResetSemana.objects.create(data_reset=data_atual)
+
+    # -----Total de Tarefas Concluidas Semana--------
+    data_hoje = localtime().date()
+    
+    # Calcular início da semana (segunda-feira)
+    inicio_semana = data_hoje - timedelta(days=data_hoje.weekday())
+    
+    inicio_semana = make_aware(datetime.combine(inicio_semana, datetime.min.time()))
+    
+    # Calcular fim da semana (domingo)
+    fim_semana = inicio_semana + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    fim_semana = make_aware(datetime.combine(fim_semana, datetime.max.time()))
+    
+    print(f"Período da semana: {inicio_semana} até {fim_semana}")
+    
+    # Obter todas as tarefas que pertencem à semana atual 
+    # (tarefas que têm pelo menos um dia da semana atual)
+    query = Q()
+    for dia in dias_semana_lista:
+        query |= Q(dias_semana__contains=dia)
+        
+    tarefas_da_semana = TarefaModel.objects.filter(query).distinct()
+    total_tarefas = tarefas_da_semana.count()
+    
+    # Contar tarefas concluídas na semana atual
+    conclusoes_semana = ConclusoesModel.objects.filter(
+        concluido=True,
+        concluida_em__isnull=False,
+        concluida_em__range=(inicio_semana, fim_semana)
+    )
+    
+    # Usar set para garantir que cada tarefa seja contada apenas uma vez
+    tarefas_concluidas_ids = set(conclusoes_semana.values_list('tarefa_id', flat=True))
+    total_concluidas_semana = len(tarefas_concluidas_ids)
+    
+    print(f"Tarefas da semana: {total_tarefas}")
+    print(f"Tarefas concluídas: {total_concluidas_semana}")
+    
+    # Calcular a porcentagem de conclusão
+    if total_tarefas > 0:
+        porcentagem_conclusao = (total_concluidas_semana / total_tarefas) * 100
+    else:
+        porcentagem_conclusao = 0
+    
+    print(f"Porcentagem de conclusão: {porcentagem_conclusao}%")
+    
+    # Criar uma lista de dicionários com as informações de cada tarefa do dia atual
+    tarefas_com_status = []
+    for tarefa in tarefas_do_dia:
+        concluido = status_conclusao.get(tarefa.id, False)
+        tarefas_com_status.append({
+            'tarefa': tarefa,
+            'concluido': concluido
+        })
 
     contexto = {
         "nome": "Gustavo Lenni",
-        "rotina": tarefas_do_dia,
+        "rotina": tarefas_com_status,
+        "dias_semana_lista": dias_semana_lista,
         "dia_semana": dia_atual,
         "dia_atual": dia_atual,
-        "hoje": hoje,
+        "dia_hoje": dia_hoje,
         "contagem_tarefas": contagem_tarefas,
-        "status_conclusao": status_conclusao
+        "total_tarefas": total_tarefas,
+        "total_concluidas_semana": total_concluidas_semana,
+        "porcentagem_conclusao": porcentagem_conclusao,
+        "inicio_semana": inicio_semana,
+        "fim_semana": fim_semana
     }
     
     return render(request, 'rotina/home.html', contexto)
+
 
 def rotina_adicionar(request: HttpRequest):
     if request.method == "POST":
@@ -113,15 +182,29 @@ def rotina_editar(request: HttpRequest, id):
 def rotina_concluir(request: HttpRequest, id, dia):
     tarefa = get_object_or_404(TarefaModel, id=id)
 
+    # Adicione log para depuração
+    print(f"Tentando alternar conclusão da tarefa {id} para o dia {dia}")
+    
     conclusao, created = ConclusoesModel.objects.get_or_create(
         tarefa=tarefa,
         dia=dia,
-        defaults={'concluido': True}
+        defaults={'concluido': True, 'concluida_em': timezone.now()}
     )
+    
     if not created:
         # Se já existe, apenas inverte o status
         conclusao.concluido = not conclusao.concluido
+        
+        # Atualiza ou limpa o timestamp conforme o estado de conclusão
+        if conclusao.concluido:
+            conclusao.concluida_em = timezone.now()
+        else:
+            conclusao.concluida_em = None
+            
         conclusao.save()
+        print(f"Data de conclusão salva: {conclusao.concluida_em}")
+    
+    print(f"Status atual da conclusão: {conclusao.concluido}")
     
     # Redirecionar para o mesmo dia que o usuário estava vendo
     return redirect(f'/rotina/?dia={dia}')
