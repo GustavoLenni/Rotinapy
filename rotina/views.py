@@ -8,9 +8,11 @@ from django.template.defaulttags import register
 from django.utils import timezone
 from django.db.models import Q
 from django.utils.timezone import make_aware, datetime
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def rotina_home(request):
+
     # ------Dia da semana------
     # Obter o dia da semana atual em inglês
     dia_semana_ingles = localtime().strftime("%A").lower()
@@ -43,18 +45,35 @@ def rotina_home(request):
     dia_hoje = dias_traduzidos.get(dia_semana_ingles, "segunda")
     
 
+
     # ----Status de Conclusão e de contagem de tarefas-----
     # Contagem de tarefas por dia da semana
+    # ele guarda a variavel todos_dias que contem todos os dias da semana de segunda a domingo
+    # e com isso ele seleciona por exemplo segunda é igual a tantas tarefas
     contagem_tarefas = {}
     for dia in todos_dias:
-        contagem_tarefas[dia] = TarefaModel.objects.filter(dias_semana__contains=dia).count()
+        contagem_tarefas[dia] = TarefaModel.objects.filter(
+            usuario=request.user,
+            dias_semana__contains=dia
+        ).count()
     
     # Filtrar tarefas do dia específico
-    tarefas_do_dia = TarefaModel.objects.filter(dias_semana__contains=dia_atual)
+    # busca todas as tarefas do dia atual
+    tarefas_do_dia = TarefaModel.objects.filter(
+        usuario=request.user,
+        dias_semana__contains=dia_atual
+    )
 
     # Mapeia conclusões existentes para o dia atual
-    conclusoes = ConclusoesModel.objects.filter(dia=dia_atual)
+    # busca as conclusões do dia atual do usuario
+    conclusoes = ConclusoesModel.objects.filter(
+        dia=dia_atual,
+        tarefa__usuario=request.user
+    )
+
+    # dicionário onde a chave é o ID da tarefa e o valor diz se ela foi concluída hoje ou não
     status_conclusao = {conclusao.tarefa_id: conclusao.concluido for conclusao in conclusoes}
+    
     print(f"Status de conclusão para o dia {dia_atual}: {status_conclusao}")
     
     # Preparar a lista de dias para o template
@@ -65,56 +84,38 @@ def rotina_home(request):
     dia_semana = data_atual.strftime("%A").lower()
 
     # Se for segunda-feira, reseta todas as confirmações 
+    # verifica se o reset ja foi feito 
     if dia_semana == 'monday':
         reset_realizado = ResetSemana.objects.filter(data_reset=data_atual).exists()
+        # se não foi reseta as conclusões e registra que o reset foi feito no banco
+        # de dados
         if not reset_realizado:
             ConclusoesModel.objects.all().update(concluido=False)
             ResetSemana.objects.create(data_reset=data_atual)
 
-    # -----Total de Tarefas Concluidas Semana--------
-    data_hoje = localtime().date()
+
+    # -----Total de Tarefas do Dia Atual--------
+    # Total de tarefas do dia específico
+    total_tarefas = tarefas_do_dia.count()
     
-    # Calcular início da semana (segunda-feira)
-    inicio_semana = data_hoje - timedelta(days=data_hoje.weekday())
+    # Tarefas concluídas do dia específico
+    total_concluidas = ConclusoesModel.objects.filter(
+        tarefa__usuario=request.user,
+        dia=dia_atual,
+        concluido=True
+    ).count()
     
-    inicio_semana = make_aware(datetime.combine(inicio_semana, datetime.min.time()))
+    print(f"Tarefas do dia {dia_atual}: {total_tarefas}")
+    print(f"Tarefas concluídas do dia {dia_atual}: {total_concluidas}")
     
-    # Calcular fim da semana (domingo)
-    fim_semana = inicio_semana + timedelta(days=6, hours=23, minutes=59, seconds=59)
-    fim_semana = make_aware(datetime.combine(fim_semana, datetime.max.time()))
-    
-    print(f"Período da semana: {inicio_semana} até {fim_semana}")
-    
-    # Obter todas as tarefas que pertencem à semana atual 
-    # (tarefas que têm pelo menos um dia da semana atual)
-    query = Q()
-    for dia in dias_semana_lista:
-        query |= Q(dias_semana__contains=dia)
-        
-    tarefas_da_semana = TarefaModel.objects.filter(query).distinct()
-    total_tarefas = tarefas_da_semana.count()
-    
-    # Contar tarefas concluídas na semana atual
-    conclusoes_semana = ConclusoesModel.objects.filter(
-        concluido=True,
-        concluida_em__isnull=False,
-        concluida_em__range=(inicio_semana, fim_semana)
-    )
-    
-    # Usar set para garantir que cada tarefa seja contada apenas uma vez
-    tarefas_concluidas_ids = set(conclusoes_semana.values_list('tarefa_id', flat=True))
-    total_concluidas_semana = len(tarefas_concluidas_ids)
-    
-    print(f"Tarefas da semana: {total_tarefas}")
-    print(f"Tarefas concluídas: {total_concluidas_semana}")
-    
-    # Calcular a porcentagem de conclusão
+    # Calcular a porcentagem de conclusão para o dia específico
     if total_tarefas > 0:
-        porcentagem_conclusao = (total_concluidas_semana / total_tarefas) * 100
+        porcentagem_conclusao = (total_concluidas / total_tarefas) * 100
     else:
         porcentagem_conclusao = 0
     
-    print(f"Porcentagem de conclusão: {porcentagem_conclusao}%")
+    print(f"Porcentagem de conclusão do dia {dia_atual}: {porcentagem_conclusao}%")
+    
     
     # Criar uma lista de dicionários com as informações de cada tarefa do dia atual
     tarefas_com_status = []
@@ -125,8 +126,20 @@ def rotina_home(request):
             'concluido': concluido
         })
 
+    # -----Informações da semana atual (mantidas para referência)--------
+    data_hoje = localtime().date()
+    
+    # Calcular início da semana (segunda-feira)
+    inicio_semana = data_hoje - timedelta(days=data_hoje.weekday())
+    
+    inicio_semana = make_aware(datetime.combine(inicio_semana, datetime.min.time()))
+    
+    # Calcular fim da semana (domingo)
+    fim_semana = inicio_semana + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    fim_semana = make_aware(datetime.combine(fim_semana, datetime.max.time()))
+
     contexto = {
-        "nome": "Gustavo Lenni",
+        "nome": request.user.username,
         "rotina": tarefas_com_status,
         "dias_semana_lista": dias_semana_lista,
         "dia_semana": dia_atual,
@@ -134,7 +147,7 @@ def rotina_home(request):
         "dia_hoje": dia_hoje,
         "contagem_tarefas": contagem_tarefas,
         "total_tarefas": total_tarefas,
-        "total_concluidas_semana": total_concluidas_semana,
+        "total_concluidas_semana": total_concluidas,  # Renomeado mas mantido para compatibilidade
         "porcentagem_conclusao": porcentagem_conclusao,
         "inicio_semana": inicio_semana,
         "fim_semana": fim_semana
@@ -142,7 +155,7 @@ def rotina_home(request):
     
     return render(request, 'rotina/home.html', contexto)
 
-
+@login_required
 def rotina_adicionar(request: HttpRequest):
     if request.method == "POST":
         # pegar os dados do formulario
@@ -151,7 +164,9 @@ def rotina_adicionar(request: HttpRequest):
         # e retorna para a pagina home
         
         if formulario.is_valid():
-            formulario.save()
+            nova_tarefa = formulario.save(commit=False)
+            nova_tarefa.usuario = request.user
+            nova_tarefa.save()
             return redirect("rotina:home")
     
     contexto = {
@@ -160,17 +175,19 @@ def rotina_adicionar(request: HttpRequest):
     return render(request, 'rotina/adicionar.html', contexto)
 
 def rotina_remover(request: HttpRequest, id):
-    tarefa = get_object_or_404(TarefaModel, id=id)
+    tarefa = get_object_or_404(TarefaModel, id=id, usuario=request.user)
     tarefa.delete()
     return redirect("rotina:home")
 
 def rotina_editar(request: HttpRequest, id):
-    tarefa = get_object_or_404(TarefaModel, id=id)
+    tarefa = get_object_or_404(TarefaModel, id=id, usuario=request.user)
     
     if request.method == 'POST':
         formulario = TarefaForm(request.POST, instance=tarefa)
         if formulario.is_valid():
-            formulario.save()
+            nova_tarefa = formulario.save(commit=False)
+            nova_tarefa.usuario = request.user
+            nova_tarefa.save()
             return redirect("rotina:home")
     
     formulario = TarefaForm(instance=tarefa)
@@ -180,7 +197,7 @@ def rotina_editar(request: HttpRequest, id):
     return render(request, 'rotina/editar.html', contexto)
 
 def rotina_concluir(request: HttpRequest, id, dia):
-    tarefa = get_object_or_404(TarefaModel, id=id)
+    tarefa = get_object_or_404(TarefaModel, id=id, usuario=request.user)
 
     # Adicione log para depuração
     print(f"Tentando alternar conclusão da tarefa {id} para o dia {dia}")

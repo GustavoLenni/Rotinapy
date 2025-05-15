@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rotina'
+    'rotina',
+    'contas'
 ]
 
 MIDDLEWARE = [
@@ -126,3 +127,8 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = '/contas/login/'
+LOGIN_REDIRECT_URL = '/rotina/'  # para onde vai depois do login
+LOGOUT_REDIRECT_URL = '/contas/login/'  # para onde vai depois do logout
+

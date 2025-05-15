@@ -1,8 +1,10 @@
 from django.db import models
 from multiselectfield import MultiSelectField
+from django.contrib.auth.models import User  # import do user
 
 # Create your models here.
 class TarefaModel(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE) 
     DIAS_SEMANA = (
         ('segunda','Segunda-feira'),
         ('terca','Terça-feira'),
@@ -25,7 +27,7 @@ class TarefaModel(models.Model):
         return self.nome
     
 class ConclusoesModel(models.Model):
-    tarefa = models.ForeignKey(TarefaModel,on_delete=models.CASCADE, related_name='conclusoes')
+    tarefa = models.ForeignKey(TarefaModel, on_delete=models.CASCADE, related_name='conclusoes')
     dia = models.CharField(max_length=10,choices=TarefaModel.DIAS_SEMANA)
     concluido = models.BooleanField(default=False)
     concluida_em = models.DateTimeField(null=True, blank=True) 

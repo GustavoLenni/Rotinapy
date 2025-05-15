@@ -1,0 +1,567 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotina.py</title>
+    <link
+      rel="icon"
+      href="{% static 'images/rotina.png' %}"
+      type="image/x-icon"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl4jmndRuHDT"
+      crossorigin="anonymous"
+    />
+    <!-- Font Awesome para ícones -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #1da1f2;
+        --primary-dark: #0d8bd4;
+        --dark: #19191d;
+        --darker: #0f0f11;
+        --light-text: #ffffff;
+        --medium-gray: #a0a0a0;
+        --dark-gray: #2e2e31;
+        --accent-purple: #6b46c1;
+        --accent-red: #e53e3e;
+        --accent-green: #48bb78;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Inter", sans-serif;
+      }
+
+      body {
+        background-color: var(--darker);
+        color: var(--primary);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Navbar moderna e clean */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: rgba(12, 12, 14, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 0.8rem 5%;
+        height: 80px;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+      }
+
+      .navbar.scrolled {
+        height: 70px;
+        background-color: rgba(10, 10, 12, 0.98);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+      }
+
+      .logo img {
+        width: 40px;
+        height: auto;
+        object-fit: contain;
+        margin-right: 12px;
+        transition: transform 0.3s ease;
+      }
+
+      .logo-text {
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 1.5rem;
+        color: var(--light-text);
+        letter-spacing: -0.5px;
+      }
+
+      .logo-text span {
+        color: var(--primary);
+      }
+
+      .logo:hover img {
+        transform: rotate(5deg) scale(1.05);
+      }
+
+      .nav-links {
+        list-style: none;
+        display: flex;
+        gap: 2rem;
+        margin: 0;
+        padding: 0;
+        align-items: center;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: var(--medium-gray);
+        font-weight: 500;
+        font-size: 0.95rem;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+        padding: 0.5rem 0.8rem;
+        border-radius: 6px;
+        position: relative;
+      }
+
+      .nav-links a:hover {
+        color: var(--light-text);
+      }
+
+      .nav-links a.active {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .nav-links a.active::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        width: 20px;
+        height: 3px;
+        background-color: var(--primary);
+        transform: translateX(-50%);
+        border-radius: 2px;
+      }
+
+      .nav-links a i {
+        margin-right: 6px;
+        font-size: 0.9rem;
+      }
+
+      .cta-button {
+        background-color: var(--primary);
+        color: var(--light-text) !important;
+        padding: 0.6rem 1.2rem !important;
+        border-radius: 8px;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(29, 161, 242, 0.3);
+        transition: all 0.3s ease !important;
+      }
+
+      .cta-button:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(29, 161, 242, 0.4);
+      }
+
+      .login-button {
+        background-color: var(--dark-gray);
+        color: var(--light-text) !important;
+        padding: 0.6rem 1.2rem !important;
+        border-radius: 8px;
+        font-weight: 600 !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease !important;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .login-button i {
+        font-size: 1rem;
+        color: var(--light-text);
+      }
+
+      .login-button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      .hamburger {
+        display: none;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: var(--light-text);
+        font-size: 1.5rem;
+      }
+
+      /* Mobile menu */
+      @media (max-width: 768px) {
+        .navbar {
+          padding: 0 1rem;
+          height: 70px;
+        }
+
+        .nav-links {
+          position: fixed;
+          top: 70px;
+          left: 0;
+          right: 0;
+          background-color: rgba(12, 12, 14, 0.98);
+          backdrop-filter: blur(10px);
+          flex-direction: column;
+          gap: 0;
+          height: 0;
+          overflow: hidden;
+          transition: height 0.3s ease;
+          width: 100%;
+        }
+
+        .nav-links.active {
+          height: auto;
+          padding: 1rem 0;
+          box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-links a {
+          width: 100%;
+          padding: 1rem 2rem;
+          text-align: left;
+          border-radius: 0;
+        }
+
+        .hamburger {
+          display: block;
+        }
+
+        .cta-button {
+          margin: 1rem 2rem;
+          text-align: center;
+          display: block;
+          width: calc(100% - 4rem);
+        }
+      }
+
+      /* Cadastro Form Styles */
+      .cadastro-container {
+        max-width: 500px;
+        margin: 120px auto 40px;
+        padding: 2.5rem;
+        border-radius: 16px;
+        background-color: rgba(20, 20, 24, 0.6);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        color: var(--light-text);
+      }
+
+      .cadastro-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .cadastro-header h2 {
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--light-text);
+        margin-bottom: 1rem;
+      }
+
+      .cadastro-header h2 span {
+        color: var(--primary);
+      }
+
+      .cadastro-header p {
+        color: var(--medium-gray);
+        font-size: 0.95rem;
+      }
+
+      .cadastro-form p {
+        margin-bottom: 1.5rem;
+        position: relative;
+      }
+
+      .cadastro-form label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--light-text);
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      .cadastro-form input[type="text"],
+      .cadastro-form input[type="password"],
+      .cadastro-form input[type="email"] {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: rgba(15, 15, 18, 0.8);
+        color: var(--light-text);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      .cadastro-form input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.25);
+      }
+
+      .input-icon {
+        position: absolute;
+        top: 38px;
+        left: 12px;
+        color: var(--medium-gray);
+      }
+
+      .cadastro-form .helptext {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--medium-gray);
+        margin-top: 0.3rem;
+      }
+
+      .cadastro-form ul {
+        font-size: 0.8rem;
+        color: var(--medium-gray);
+        margin-left: 1.2rem;
+        margin-top: 0.3rem;
+      }
+
+      .cadastro-form .errorlist {
+        color: var(--accent-red);
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 0.9rem;
+        border: none;
+        border-radius: 8px;
+        background-color: var(--primary);
+        color: var(--light-text);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 1rem;
+      }
+
+      .submit-btn:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(29, 161, 242, 0.4);
+      }
+
+      .login-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--medium-gray);
+        font-size: 0.9rem;
+      }
+
+      .login-link a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .login-link a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+      }
+
+      .cadastro-divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+        color: var(--medium-gray);
+      }
+
+      .cadastro-divider::before,
+      .cadastro-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .cadastro-divider span {
+        padding: 0 1rem;
+        font-size: 0.8rem;
+      }
+
+      /* Form field style improvements */
+      .cadastro-form p.form-row {
+        position: relative;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 480px) {
+        .cadastro-container {
+          margin: 100px 1rem 2rem;
+          padding: 1.5rem;
+        }
+
+        .cadastro-header h2 {
+          font-size: 1.6rem;
+        }
+
+        .cadastro-form input[type="text"],
+        .cadastro-form input[type="password"],
+        .cadastro-form input[type="email"] {
+          padding: 0.7rem 0.9rem;
+          font-size: 0.95rem;
+        }
+
+        .submit-btn {
+          padding: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar moderna e clean -->
+    <nav class="navbar">
+      <a href="{% url 'projeto' %}" class="logo">
+        <img src="{% static 'images/rotina.png' %}" alt="Rotina Logo" />
+        <div class="logo-text">Rotina.<span>py</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li>
+          <a href="{% url 'projeto' %}"><i class="fas fa-home"></i>Início</a>
+        </li>
+        <li>
+          <a href="{% url 'contas:login' %}" class="login-button">
+            <i class="fas fa-user"></i>Login
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'contas:cadastro' %}" class="cta-button active">
+            <i class="fas fa-user-plus"></i>Cadastre-se
+          </a>
+        </li>
+      </ul>
+
+      <button class="hamburger">
+        <i class="fas fa-bars"></i>
+      </button>
+    </nav>
+
+    <main class="cadastro-container">
+      <div class="cadastro-header">
+        <h2>Crie sua <span>Conta</span></h2>
+        <p>Preencha os campos abaixo para começar a organizar suas tarefas</p>
+      </div>
+
+      <form method="post" class="cadastro-form">
+        {% csrf_token %}
+        {% for field in form %}
+  <p class="form-row">
+    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+    
+    {% if field.field.widget.input_type == 'password' %}
+      <div class="password-container" style="position: relative;">
+        {{ field }}
+        <i class="fas fa-eye toggle-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--medium-gray);"></i>
+      </div>
+    {% else %}
+      {{ field }}
+    {% endif %}
+    
+    {% if field.help_text %}
+      <span class="helptext">{{ field.help_text }}</span>
+    {% endif %}
+    {% if field.errors %}
+      <ul class="errorlist">
+        {% for error in field.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </p>
+{% endfor %}
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-user-plus"></i> Cadastrar
+        </button>
+      </form>
+
+      <div class="cadastro-divider">
+        <span>ou</span>
+      </div>
+
+      <p class="login-link">
+        Já tem uma conta? 
+        <a href="{% url 'contas:login' %}">Faça login</a>
+      </p>
+    </main>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      // JavaScript para controle do menu mobile
+      document.addEventListener("DOMContentLoaded", function () {
+        const hamburger = document.querySelector(".hamburger");
+        const navLinks = document.querySelector(".nav-links");
+
+        hamburger.addEventListener("click", function () {
+          navLinks.classList.toggle("active");
+          hamburger.innerHTML = navLinks.classList.contains("active")
+            ? '<i class="fas fa-times"></i>'
+            : '<i class="fas fa-bars"></i>';
+        });
+
+        // Navbar scroll effect
+        window.addEventListener("scroll", function () {
+          const navbar = document.querySelector(".navbar");
+          if (window.scrollY > 50) {
+            navbar.classList.add("scrolled");
+          } else {
+            navbar.classList.remove("scrolled");
+          }
+        });
+      });
+
+      document.addEventListener("DOMContentLoaded", function() {
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    
+    toggleButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const passwordField = this.previousElementSibling;
+        
+        // Alternar tipo do campo entre password e text
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        
+        // Alternar ícone entre olho e olho riscado
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+      });
+    });
+  });
+    </script>
+  </body>
+</html>

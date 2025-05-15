@@ -537,6 +537,21 @@
             width: calc(50% - 12px);
         }
     }
+    .logout-button {
+  background-color: var(--accent-red);
+  color: var(--light-text) !important;
+  padding: 0.6rem 1.2rem !important;
+  border-radius: 8px;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+  transition: all 0.3s ease !important;
+}
+
+.logout-button:hover {
+  background-color: #c53030;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(229, 62, 62, 0.4);
+}
   </style>
   <body>
     <!-- Elementos de efeito visual -->
@@ -554,6 +569,11 @@
         <li><a href="{% url 'projeto' %}"><i class="fas fa-home"></i>Início</a></li>
         <li><a href="{% url 'rotina:home' %}"><i class="fas fa-tasks"></i>Minhas Tarefas</a></li>
         <li><a href="{% url 'rotina:adicionar' %}" class="active cta-button"><i class="fas fa-plus"></i>Nova Tarefa</a></li>
+        <li>
+        <a href="{% url 'contas:logout' %}" class="logout-button">
+          <i class="fas fa-sign-out-alt"></i>Sair
+        </a>
+      </li>
       </ul>
       
       <button class="hamburger">
