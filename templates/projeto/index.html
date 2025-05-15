@@ -182,51 +182,87 @@
     }
 
     /* Mobile menu */
-    @media (max-width: 768px) {
-      .navbar {
-        padding: 0 1rem;
-        height: 70px;
-      }
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1rem;
+    height: 70px;
+  }
 
-      .nav-links {
-        position: fixed;
-        top: 70px;
-        left: 0;
-        right: 0;
-        background-color: rgba(12, 12, 14, 0.98);
-        backdrop-filter: blur(10px);
-        flex-direction: column;
-        gap: 0;
-        height: 0;
-        overflow: hidden;
-        transition: height 0.3s ease;
-        width: 100%;
-      }
+  .nav-links {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background-color: rgba(12, 12, 14, 0.98);
+    backdrop-filter: blur(10px);
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    z-index: 999;
+  }
 
-      .nav-links.active {
-        height: auto;
-        padding: 1rem 0;
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-      }
+  .nav-links.active {
+    height: auto;
+    padding: 1rem 0;
+    overflow-y: auto;
+    max-height: calc(100vh - 70px);
+  }
 
-      .nav-links a {
-        width: 100%;
-        padding: 1rem 2rem;
-        text-align: left;
-        border-radius: 0;
-      }
+  .nav-links li {
+    width: 100%;
+  }
 
-      .hamburger {
-        display: block;
-      }
+  .nav-links a {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    border-radius: 0;
+    border-left: 3px solid transparent;
+    font-size: 1rem;
+  }
 
-      .cta-button {
-        margin: 1rem 2rem;
-        text-align: center;
-        display: block;
-        width: calc(100% - 4rem);
-      }
-    }
+  .nav-links a.active {
+    border-left: 3px solid var(--primary);
+    background-color: rgba(0, 136, 255, 0.1);
+  }
+
+  .nav-links a.active::after {
+    display: none;
+  }
+
+  .cta-button, .logout-button, .login-button {
+    margin: 0.5rem 1.5rem;
+    width: calc(100% - 3rem);
+    text-align: center;
+    justify-content: center;
+  }
+
+  .hamburger {
+    display: block;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 136, 255, 0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .hamburger:hover {
+    background-color: rgba(0, 136, 255, 0.2);
+  }
+
+  .hamburger i {
+    font-size: 1.2rem;
+  }
+}
 
     .container {
       display: flex;
@@ -901,26 +937,35 @@
     <script>
       // JavaScript para controle do menu mobile
       document.addEventListener("DOMContentLoaded", function () {
-        const hamburger = document.querySelector(".hamburger");
-        const navLinks = document.querySelector(".nav-links");
+  const hamburger = document.querySelector(".hamburger");
+  const navLinks = document.querySelector(".nav-links");
+  const navLinksItems = document.querySelectorAll(".nav-links a");
 
-        hamburger.addEventListener("click", function () {
-          navLinks.classList.toggle("active");
-          hamburger.innerHTML = navLinks.classList.contains("active")
-            ? '<i class="fas fa-times"></i>'
-            : '<i class="fas fa-bars"></i>';
-        });
+  hamburger.addEventListener("click", function () {
+    navLinks.classList.toggle("active");
+    hamburger.innerHTML = navLinks.classList.contains("active")
+      ? '<i class="fas fa-times"></i>'
+      : '<i class="fas fa-bars"></i>';
+  });
 
-        // Navbar scroll effect
-        window.addEventListener("scroll", function () {
-          const navbar = document.querySelector(".navbar");
-          if (window.scrollY > 50) {
-            navbar.classList.add("scrolled");
-          } else {
-            navbar.classList.remove("scrolled");
-          }
-        });
-      });
+  // Fechar menu ao clicar em um link
+  navLinksItems.forEach(item => {
+    item.addEventListener("click", function() {
+      navLinks.classList.remove("active");
+      hamburger.innerHTML = '<i class="fas fa-bars"></i>';
+    });
+  });
+
+  // Navbar scroll effect
+  window.addEventListener("scroll", function () {
+    const navbar = document.querySelector(".navbar");
+    if (window.scrollY > 50) {
+      navbar.classList.add("scrolled");
+    } else {
+      navbar.classList.remove("scrolled");
+    }
+  });
+});
     </script>
   </body>
 </html>
